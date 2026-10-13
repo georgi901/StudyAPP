@@ -16,10 +16,10 @@ describe('FlashCard Component', () => {
   const mockCard = {
     id: 1,
     question: 'Ce este React?',
-    answer: 'O librărie JS pentru interfețe.'
+    answer: 'A JavaScript library for user interfaces.'
   };
 
-  it('se întoarce (flip) la click', () => {
+  it('flips when clicked', () => {
     const setFlipped = vi.fn();
     render(
       <FlashCard 
@@ -36,7 +36,7 @@ describe('FlashCard Component', () => {
     expect(setFlipped).toHaveBeenCalled();
   });
 
-  it('afișează întrebarea pe față și răspunsul pe spate', () => {
+  it('displays the question on the front and the answer on the back', () => {
     render(
       <FlashCard 
         card={mockCard} 
@@ -47,6 +47,6 @@ describe('FlashCard Component', () => {
     );
     
     expect(screen.getByText('Ce este React?')).toBeInTheDocument();
-    expect(screen.getByText('O librărie JS pentru interfețe.')).toBeInTheDocument();
+    expect(screen.getByText('A JavaScript library for user interfaces.')).toBeInTheDocument();
   });
 });

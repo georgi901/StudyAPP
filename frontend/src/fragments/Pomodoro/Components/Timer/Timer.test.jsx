@@ -5,12 +5,12 @@ import Timer from './Timer';
 afterEach(cleanup);
 
 describe('Timer Component', () => {
-  it('afișează 25:00 la start', () => {
+  it('displays 25:00 initially', () => {
     render(<Timer timeLeft={1500} totalPhaseTime={1500} phase="focus" />);
     expect(screen.getByText('25:00')).toBeInTheDocument();
   });
 
-  it('afișează corect timpul rămas (ex: 10:05)', () => {
+  it('displays the remaining time correctly (e.g. 10:05)', () => {
     render(<Timer timeLeft={605} totalPhaseTime={1500} phase="focus" />);
     expect(screen.getByText('10:05')).toBeInTheDocument();
   });

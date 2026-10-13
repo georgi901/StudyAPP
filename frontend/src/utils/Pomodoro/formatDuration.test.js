@@ -2,19 +2,19 @@ import { describe, it, expect } from 'vitest';
 import { formatDuration } from './formatDuration';
 
 describe('formatDuration', () => {
-  it('formatează doar secunde', () => {
+  it('formats seconds only', () => {
     expect(formatDuration(45)).toBe('45s');
   });
 
-  it('formatează minute rotunde', () => {
+  it('formats whole minutes', () => {
     expect(formatDuration(120)).toBe('2 min');
   });
 
-  it('formatează minute și secunde', () => {
+  it('formats minutes and seconds', () => {
     expect(formatDuration(125)).toBe('2 min 5s');
   });
 
-  it('gestionează 0 secunde', () => {
+  it('handles zero seconds', () => {
     expect(formatDuration(0)).toBe('0s');
   });
 });

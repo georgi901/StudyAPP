@@ -13,7 +13,7 @@ export default function UploadPdfModal({ open, onClose }) {
         </div>
 
         <p className="upload-modal-desc">
-          Adaugă PDF‑ul pe care vrei să îl sumarizezi în cartonașe.
+          Add the PDF you want to summarize into flashcards.
         </p>
 
         <div className="upload-modal-input">

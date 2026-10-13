@@ -10,7 +10,7 @@ export default defineConfig([
     files: ['**/*.{js,jsx}'],
     extends: [
       js.configs.recommended,
-      // reactHooks.configs.flat.recommended, // Dezactivăm setul recomandat care e prea strict
+      // reactHooks.configs.flat.recommended, // Disabled because the rules are too strict for this project.
       reactRefresh.configs.vite,
     ],
     languageOptions: {
