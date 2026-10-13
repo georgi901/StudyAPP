@@ -1,6 +1,6 @@
 
 ## Prompt
-- Pentru maximizarea eficientei a fost folosit un prompt specializat care sa se focuseze pe procesul de invatare dar si pe eficienta si best-practice. Rolul agentului a fost impartirea task-ului in mai multe task-uri mai mici. Astfel, prin indeplinirea lor, sa se ajunga la rezultatul final.
+- To maximize efficiency, we used a specialized prompt focused on the learning process, software engineering best practices and task decomposition. The agent was instructed to divide the work into smaller tasks whose completion would lead to the final result.
 
 
 ```md
@@ -100,12 +100,11 @@ vpn_rust
 Please initialize **Milestone 1**
 ```
 
-- Initial prompt-ul era facut pentru realizarea unui VPN, insa a fost folosit si in acest context intrucat partea de criptare era identica.
+- The original prompt was designed to build a VPN, but it was also used in this context because the encryption component was equivalent.
 
 ## Folosirea rezultatului
-- In continuare au fost realizate functiile de criptare si decriptare folosind biblioteca `chacha20ploy1305`. Folosirea agentului AI ne-a ajutat in intelegerea modului in care functioneaza si algoritmul dar si limbajul `RUST`
-- Realizarea algoritmului a fost finalizata urmarind pasii si sugestiile generate de acesta. 
-
+- The encryption and decryption functions were implemented using the `chacha20poly1305` library. The AI assistant helped us understand both the algorithm and the `Rust` language.
+- The algorithm was completed by following and reviewing the steps and suggestions it generated.
 
 
 

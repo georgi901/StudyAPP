@@ -53,7 +53,7 @@ export default function EditFileScreen({ file, onBack, onSave, onConvertToPdf })
                 setDraftContent(data.content);
             }
         } catch (err) {
-            console.error("Eroare la incarcarea continutului fisierului:", err);
+            console.error("Failed to load the file contents:", err);
             setContentError(true);
         } finally {
             setIsLoadingContent(false);

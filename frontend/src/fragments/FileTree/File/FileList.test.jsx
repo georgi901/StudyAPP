@@ -11,17 +11,17 @@ describe('FileList Component', () => {
     { id: 3, name: 'image.png', isOwner: true },
   ];
 
-  it('afișează mesaj de încărcare', () => {
+  it('displays the loading message', () => {
     render(<FileList selectedFolder={1} filesLoading={true} files={[]} searchFilter="" />);
     expect(screen.getByText('Loading files....')).toBeInTheDocument();
   });
 
-  it('afișează mesaj dacă folderul este gol', () => {
+  it('displays a message when the folder is empty', () => {
     render(<FileList selectedFolder={1} filesLoading={false} files={[]} searchFilter="" />);
     expect(screen.getByText('This folder is empty....')).toBeInTheDocument();
   });
 
-  it('filtrează fișierele după searchFilter', () => {
+  it('filters files using searchFilter', () => {
     render(
       <FileList 
         selectedFolder={1} 

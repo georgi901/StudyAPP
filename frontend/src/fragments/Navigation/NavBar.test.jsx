@@ -23,32 +23,32 @@ describe('NavBar Component', () => {
     </BrowserRouter>
   );
 
-  it('randează link-ul Dashboard', () => {
+  it('renders the Dashboard link', () => {
     renderNavBar();
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
   });
 
-  it('randează link-ul Pomodoro', () => {
+  it('renders the Pomodoro link', () => {
     renderNavBar();
     expect(screen.getByText('Pomodoro')).toBeInTheDocument();
   });
 
-  it('randează link-ul FlashCards', () => {
+  it('renders the FlashCards link', () => {
     renderNavBar();
     expect(screen.getByText('FlashCards')).toBeInTheDocument();
   });
 
-  it('randează link-ul FileTree', () => {
+  it('renders the FileTree link', () => {
     renderNavBar();
     expect(screen.getByText('FileTree')).toBeInTheDocument();
   });
 
-  it('randează link-ul Groups', () => {
+  it('renders the Groups link', () => {
     renderNavBar();
     expect(screen.getByText('Groups')).toBeInTheDocument();
   });
 
-  it('apelează funcția de logout la click pe buton', () => {
+  it('calls logout when the button is clicked', () => {
     renderNavBar();
     const logoutButton = screen.getByText('Logout');
     fireEvent.click(logoutButton);

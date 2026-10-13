@@ -21,7 +21,7 @@ class Deck(models.Model):
         return f"{self.title} (by {self.user.username})"
    
 class Flashcard(models.Model):
-    #Flashcardurile individuale cu întrebare și răspuns. Apartine unui deck
+    # Individual flashcards with a question and answer. Belongs to a deck.
 
     deck = models.ForeignKey(Deck, on_delete=models.CASCADE, related_name='flashcards')
     question = models.CharField(max_length=500, help_text="Question text")

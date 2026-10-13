@@ -18,32 +18,32 @@ describe('LoginForm', () => {
     </BrowserRouter>
   );
 
-  it('randează input-ul de username', () => {
+  it('renders the username input', () => {
     renderForm();
     expect(screen.getByPlaceholderText('Username')).toBeInTheDocument();
   });
 
-  it('randează input-ul de password', () => {
+  it('renders the password input', () => {
     renderForm();
     expect(screen.getByPlaceholderText('Password')).toBeInTheDocument();
   });
 
-  it('randează butonul de login', () => {
+  it('renders the login button', () => {
     renderForm();
     expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
   });
 
-  it('username-ul este câmp obligatoriu', () => {
+  it('requires the username field', () => {
     renderForm();
     expect(screen.getByPlaceholderText('Username')).toBeRequired();
   });
 
-  it('password-ul este câmp obligatoriu', () => {
+  it('requires the password field', () => {
     renderForm();
     expect(screen.getByPlaceholderText('Password')).toBeRequired();
   });
 
-  it('permite scrierea în câmpul de username', () => {
+  it('allows typing into the username field', () => {
     renderForm();
     const input = screen.getByPlaceholderText('Username');
     fireEvent.change(input, { target: { value: 'myuser' } });

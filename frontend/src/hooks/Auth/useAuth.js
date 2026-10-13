@@ -32,7 +32,7 @@ export const useAuth = () => {
       return { success: true };
     } catch (error) {
       console.error('Register error:', error);
-      return { success: false, error: error.response?.data || 'Eroare la înregistrare' };
+      return { success: false, error: error.response?.data || 'Registration failed' };
     }
   };
 

@@ -1,85 +1,42 @@
-# Raport privind utilizarea AI în dezvoltarea componentei MCP Server
+# Report on Using AI to Develop the MCP Server Component
 
-În cadrul proiectului, am folosit AI-ul ca instrument de sprijin în procesul de dezvoltare pentru componenta **MCP Server**. Această componentă are rolul de a face legătura între aplicația *StudyAPP* și un agent AI, oferind agentului acces la anumite funcționalități ale backend-ului printr-un set de instrumente bine definite.
+During the project, we used AI as a support tool while developing the **MCP Server** component. This component connects *StudyAPP* to an AI agent and gives the agent access to selected backend capabilities through a well-defined set of tools.
 
----
+## 1. Understanding the Model Context Protocol
 
-## 1. Înțelegerea conceptului de Model Context Protocol
+AI helped us understand the **Model Context Protocol** and how it can be integrated into a web application. MCP exposes selected application functions to an AI agent, so the agent can interact with the application through controlled interfaces rather than unrestricted backend access.
 
-AI-ul a fost folosit în primul rând pentru înțelegerea conceptului de **Model Context Protocol** și pentru clarificarea modului în care acesta poate fi integrat într-o aplicație web. Deoarece MCP presupune expunerea unor funcții ale aplicației către un agent AI, am folosit AI-ul pentru a înțelege mai bine cum trebuie organizată această comunicare și ce rol are serverul MCP în arhitectura generală a proiectului.
+## 2. Separating Responsibilities
 
----
+The MCP server is divided into two main components:
 
-## 2. Separarea responsabilităților în cadrul componentei
+- `viewer_server.py` handles read-only operations such as listing folders, reading files and viewing flashcard decks.
+- `creator_server.py` handles write operations such as creating files, folders and flashcards.
 
-Un aspect important în care AI-ul ne-a ajutat a fost separarea responsabilităților în cadrul componentei. În proiect, MCP Server-ul este împărțit în două părți principale: `viewer_server.py` și `creator_server.py`.
+This separation improves organization, makes permissions easier to reason about and keeps the component maintainable.
 
-### Viewer
+## 3. Exposing Functions as MCP Tools
 
-Partea de **viewer** este destinată operațiilor de citire și vizualizare, precum:
+Functions are marked with the `@mcp.tool()` decorator, which makes them available to the AI agent. Each tool represents one explicit action that the agent is allowed to perform. The agent can therefore call only the operations exposed by the MCP server.
 
-- listarea folderelor,
-- afișarea fișierelor,
-- citirea conținutului unui fișier,
-- vizualizarea deck-urilor de flashcard-uri.
+The MCP servers communicate with the Django backend through HTTP requests to existing API endpoints. The asynchronous `httpx` library is used for these requests. This design keeps the main business logic in the backend and avoids duplicating data storage in the MCP layer.
 
-### Creator
+## 4. The Role of `main.py`
 
-Partea de **creator** este destinată operațiilor prin care se creează conținut nou, cum ar fi:
+The `main.py` module combines the `viewer` and `creator` servers into a FastAPI application and exposes them through separate endpoints. It acts as an **aggregator**, bringing multiple MCP servers together behind a single access point.
 
-- crearea unui deck de flashcard-uri,
-- adăugarea unui flashcard,
-- crearea unui fișier de studiu.
+The component uses **SSE** (*Server-Sent Events*) as its transport. SSE enables communication over HTTP and makes the MCP server easier to connect to external tools and AI platforms.
 
-Am folosit AI-ul pentru a verifica dacă această separare este logică și potrivită pentru arhitectura aplicației. Prin explicațiile primite, am înțeles că împărțirea între acțiuni de vizualizare și acțiuni de creare ajută la organizarea codului și face componenta mai ușor de întreținut.
+## 5. The Role of ngrok in Testing
 
----
+Because the MCP server runs locally, external services cannot access it directly. Ngrok exposes the local server through a temporary public URL, which is useful for testing MCP endpoints and verifying external access.
 
-## 3. Transformarea funcțiilor în tool-uri MCP
+## 6. Documentation and Development Support
 
-AI-ul a fost util și pentru înțelegerea modului în care funcțiile sunt transformate în tool-uri MCP. În cod, funcțiile sunt marcate cu decoratorul `@mcp.tool()`, ceea ce le face disponibile pentru agentul AI. Cu ajutorul AI-ului, am înțeles că aceste tool-uri reprezintă acțiunile concrete pe care agentul le poate executa în aplicație. Astfel, agentul nu are acces liber la întregul backend, ci poate apela doar funcțiile definite explicit în serverul MCP.
+AI was also used to document the component and explain how its files, tools and communication flow fit into the application architecture. It helped us understand new concepts faster, review the organization of the implementation and write clearer technical documentation.
 
----
+AI did not replace the development process. It was used as a support tool for clarification, organization and documentation.
 
-## 4. Comunicarea cu backend-ul
+## Conclusion
 
-Pentru comunicarea cu backend-ul aplicației, MCP Server-ul folosește cereri HTTP către endpoint-urile existente. AI-ul ne-a ajutat să clarificăm modul în care aceste cereri trebuie structurate și de ce este utilă folosirea unei biblioteci asincrone precum `httpx`. Prin această abordare, serverul MCP nu stochează date separat, ci acționează ca un intermediar între agentul AI și API-ul aplicației. Acest lucru păstrează logica principală în backend și permite reutilizarea endpoint-urilor deja implementate.
-
----
-
-## 5. Rolul fișierului `main.py`
-
-O altă parte în care AI-ul ne-a fost util a fost înțelegerea rolului fișierului `main.py`. Acesta unește serverele `viewer` și `creator` într-o aplicație FastAPI și le expune prin endpoint-uri separate. AI-ul ne-a ajutat să formulăm mai clar ideea că `main.py` funcționează ca un **agregator** — o componentă care adună mai multe servere MCP într-un singur punct de acces.
-
----
-
-## 6. Transportul prin Server-Sent Events (SSE)
-
-În cadrul acestei componente se folosește transportul prin **SSE** (*Server-Sent Events*). AI-ul ne-a ajutat să înțelegem de ce această alegere este potrivită: SSE permite comunicarea prin HTTP și face serverul mai ușor de conectat cu instrumente externe. Astfel, serverul MCP poate fi testat și folosit de agenți AI sau de platforme externe care pot comunica prin endpoint-uri HTTP.
-
----
-
-## 7. Rolul ngrok în procesul de testare
-
-Am folosit AI-ul și pentru a înțelege rolul **ngrok** în procesul de testare. Deoarece serverul MCP rulează local, acesta nu poate fi accesat direct de servicii externe. Ngrok permite expunerea serverului local printr-un URL public temporar. Acest lucru ne-a fost util pentru testarea endpoint-urilor MCP și pentru verificarea modului în care serverul poate fi accesat din exterior.
-
----
-
-## 8. Utilizarea AI-ului pentru documentare
-
-Pe lângă partea tehnică, AI-ul a fost folosit și pentru documentare. După ce am lucrat la componenta MCP Server, am folosit AI-ul pentru a formula explicații mai clare despre rolul fișierelor, structura serverului și modul în care acesta se integrează în aplicație. Acest lucru ne-a ajutat să descriem mai bine contribuția noastră și să transformăm partea tehnică într-o explicație ușor de înțeles.
-
----
-
-## Concluzie
-
-Considerăm că utilizarea AI-ului a fost utilă în procesul de dezvoltare deoarece ne-a ajutat să înțelegem mai rapid conceptele noi, să verificăm structura implementării și să formulăm explicații clare pentru documentație. AI-ul nu a înlocuit procesul de dezvoltare, ci a fost folosit ca un instrument de sprijin pentru clarificare, organizare și documentare.
-
-În concluzie, AI-ul a contribuit la dezvoltarea componentei MCP Server prin:
-
-- explicarea conceptelor legate de *Model Context Protocol*,
-- sprijin în organizarea serverelor `viewer` și `creator`,
-- clarificarea comunicării cu backend-ul,
-- ajutor în documentarea arhitecturii.
-
-Componenta rezultată permite aplicației *StudyAPP* să comunice cu un agent AI prin tool-uri bine definite, transformând AI-ul într-un asistent integrat în aplicație, capabil să interacționeze cu funcționalitățile backend-ului într-un mod controlat și organizat.
+The resulting MCP component allows *StudyAPP* to communicate with an AI agent through well-defined tools. The agent can access or modify selected study resources while the core business logic remains in the Django backend.

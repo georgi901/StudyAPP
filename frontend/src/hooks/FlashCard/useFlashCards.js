@@ -24,7 +24,7 @@ export function useFlashCards() {
   const [index, setIndex] = useState(saved?.index || 0);
   const [flipped, setFlipped] = useState(false);
   
-  // Progresul rămâne local momentan, deoarece backend-ul necesită un User logat
+  // Progress remains local for now because the backend requires an authenticated user.
   const [statusById, setStatusById] = useState(saved?.statusById || {});
   
   const [showForm, setShowForm] = useState(false);
@@ -33,8 +33,7 @@ export function useFlashCards() {
   const [flashStatus, setFlashStatus] = useState(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
 
-  // 1. Aducem seturile de la backend. Datorită modificării din Django, 
-  // response.data conține acum și cardurile imbricate direct în set!
+  // 1. Fetch decks from the backend. The response also contains nested cards.
   useEffect(() => {
     axios.get("http://127.0.0.1:8080/api/flashcards/decks/", getAuthConfig())
       .then((response) => {
@@ -48,23 +47,23 @@ export function useFlashCards() {
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Eroare la aducerea seturilor din backend:", error);
+        console.error("Failed to fetch decks from the backend:", error);
         setLoading(false);
       });
-  }, []); // Rulează o singură dată la montare
+  }, []); // Run once on mount.
 
-  // 2. Extragem cardurile din setul selectat, FĂRĂ a mai face un request separat
+  // 2. Extract cards from the selected deck without another request.
   const currentSet = useMemo(() => sets.find((s) => String(s.id) === String(setId)), [sets, setId]);
   const allCards = currentSet?.cards || [];
 
-  // 3. Resetăm sesiunea când se schimbă setul
+  // 3. Reset the session when the selected deck changes.
   useEffect(() => {
     if(allCards.length > 0) {
       setSessionIds(allCards.map((c) => c.id));
       setIndex(0); 
       setFlipped(false);
     } else {
-      setSessionIds([]); // Dacă setul e gol, curățăm ecranul
+      setSessionIds([]); // Clear the screen when the deck is empty.
     }
   }, [setId, allCards]);
 
@@ -87,7 +86,7 @@ export function useFlashCards() {
   const percent = allCards.length ? Math.round(((known + unknown) / allCards.length) * 100) : 0;
   const finished = allCards.length > 0 && unanswered === 0;
 
-  // Salvăm strict progresul local (localStorage) până implementezi login-ul
+  // Persist progress locally until authenticated backend progress is implemented.
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ 
       sets, setId, sessionIds, index, statusById 
@@ -156,11 +155,11 @@ export function useFlashCards() {
     setFlipped(false);
   }
 
-  // 4. Modificăm salvarea cardurilor noi ca să meargă spre Backend
+  // 4. Save newly created cards through the backend.
   function addCard(e) {
     e.preventDefault();
     if (!setId) {
-      alert("Vă rugăm să creați sau să selectați un pachet mai întâi!");
+      alert("Please create or select a deck first!");
       return;
     }
     if (!q.trim() || !a.trim()) return;
@@ -172,7 +171,7 @@ export function useFlashCards() {
         answer: a.trim() 
     };
 
-    // Trimitem POST request; modelul Flashcard nu necesită User, deci va funcționa
+    // Send a POST request to create the flashcard.
     axios.post("http://127.0.0.1:8080/api/flashcards/cards/", newCardData, getAuthConfig())
         .then((response) => {
             const savedCard = response.data;
@@ -180,7 +179,7 @@ export function useFlashCards() {
             setSessionIds((old) => [...old, savedCard.id]);
             setQ(""); setA(""); setShowForm(false);
         })
-        .catch((error) => console.error("Eroare la adăugarea cardului în baza de date:", error));
+        .catch((error) => console.error("Failed to add the flashcard to the database:", error));
   }
 
   function createDeck(title) {
@@ -193,7 +192,7 @@ export function useFlashCards() {
             setPrevSetId(savedDeck.id);
             setShowUploadModal(false); // Refolosim aceasta stare pt noul modal
         })
-        .catch((error) => console.error("Eroare la crearea pachetului:", error));
+        .catch((error) => console.error("Failed to create the deck:", error));
   }
 
   function saveSessionStats() {
@@ -204,8 +203,8 @@ export function useFlashCards() {
       responses: known + unknown,
     };
     axios.post("http://127.0.0.1:8080/api/flashcards/sessions/", sessionData, getAuthConfig())
-        .then(() => console.log("Sesiune salvată cu succes!"))
-        .catch((error) => console.error("Eroare la salvarea sesiunii:", error));
+        .then(() => console.log("Session saved successfully!"))
+        .catch((error) => console.error("Failed to save the session:", error));
   }
 
   const [recommendedDecks, setRecommendedDecks] = useState([]);
@@ -217,7 +216,7 @@ export function useFlashCards() {
             setRecommendedDecks(response.data);
             setShowRecommendations(true);
         })
-        .catch((error) => console.error("Eroare la preluarea recomandarilor:", error));
+        .catch((error) => console.error("Failed to fetch recommendations:", error));
   }
 
 
