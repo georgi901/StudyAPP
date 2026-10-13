@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import SessionSummary from './SessionSummary'
 
 describe('SessionSummary', () => {
-  it('afiseaza duratele la fel ca istoricul pentru valori sub un minut sau mixte', () => {
+  it('displays durations like the history for sub-minute and mixed values', () => {
     render(
       <SessionSummary
         session={{

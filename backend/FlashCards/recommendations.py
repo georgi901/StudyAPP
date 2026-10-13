@@ -26,65 +26,65 @@ COMPONENT_MIN_ABS_CONTRIB = 0.015
 SIGMA_MIN_RATIO_FOR_OVERRIDE = 0.10
 
 
-def difficulty_score(greseli, raspunsuri):
-    return (greseli + LAPLACE_ALPHA) / max(raspunsuri + LAPLACE_BETA, 1)
+def difficulty_score(mistakes, responses):
+    return (mistakes + LAPLACE_ALPHA) / max(responses + LAPLACE_BETA, 1)
 
 def get_db_interactions(user):
     qs = DeckSession.objects.filter(user=user).order_by('-date')
     grupe = defaultdict(list)
     for entry in qs:
         grupe[entry.date].append({
-            "pachet": entry.deck_id,
-            "greseli": entry.mistakes,
-            "raspunsuri": entry.responses,
+            "deck": entry.deck_id,
+            "mistakes": entry.mistakes,
+            "responses": entry.responses,
         })
     return grupe
 
 def build_daily_difficulty_matrix(data, user, nr_zile=DEFAULT_NR_ZILE):
     tmp = {}
-    for zi, pachete_zi in data.items():
-        agg = defaultdict(lambda: {"greseli": 0, "raspunsuri": 0})
-        for entry in pachete_zi:
-            pid = entry["pachet"]
-            agg[pid]["greseli"] += entry["greseli"]
-            agg[pid]["raspunsuri"] += entry["raspunsuri"]
-        tmp[zi] = [
-            {"pachet": p, "greseli": v["greseli"], "raspunsuri": v["raspunsuri"]}
-            for p, v in sorted(agg.items())
+    for day, decks_for_day in data.items():
+        agg = defaultdict(lambda: {"mistakes": 0, "responses": 0})
+        for entry in decks_for_day:
+            deck_id = entry["deck"]
+            agg[deck_id]["mistakes"] += entry["mistakes"]
+            agg[deck_id]["responses"] += entry["responses"]
+        tmp[day] = [
+            {"deck": deck_id, "mistakes": values["mistakes"], "responses": values["responses"]}
+            for deck_id, values in sorted(agg.items())
         ]
 
-    pachete_qs = Deck.objects.filter(user=user)
-    pachete_list = sorted([p.id for p in pachete_qs])
-    pachet_to_col = {p: idx for idx, p in enumerate(pachete_list)}
+    decks_qs = Deck.objects.filter(user=user)
+    deck_ids = sorted([deck.id for deck in decks_qs])
+    deck_to_col = {deck_id: idx for idx, deck_id in enumerate(deck_ids)}
     today = date.today()
     days = [today - timedelta(days=i) for i in range(1, nr_zile + 1)]
 
-    A_raw = np.full((len(days), len(pachete_list)), np.nan, dtype=float)
+    A_raw = np.full((len(days), len(deck_ids)), np.nan, dtype=float)
 
     for row_idx, zi in enumerate(days):
-        for entry in tmp.get(zi, []):
-            pid = entry["pachet"]
-            if pid not in pachet_to_col:
+        for entry in tmp.get(day, []):
+            deck_id = entry["deck"]
+            if deck_id not in deck_to_col:
                 continue
-            col = pachet_to_col[pid]
-            A_raw[row_idx, col] = difficulty_score(entry["greseli"], entry["raspunsuri"])
+            col = deck_to_col[deck_id]
+            A_raw[row_idx, col] = difficulty_score(entry["mistakes"], entry["responses"])
 
     X = np.where(np.isnan(A_raw), 0.0, A_raw - DIFFICULTY_THRESHOLD)
 
-    ultima_accesare = {}
-    for zi, entries in tmp.items():
+    last_access = {}
+    for day, entries in tmp.items():
         for entry in entries:
-            pid = entry["pachet"]
-            ultima_accesare[pid] = max(ultima_accesare.get(pid, zi), zi)
+            deck_id = entry["deck"]
+            last_access[deck_id] = max(last_access.get(deck_id, day), day)
 
-    zile_de_la_ultima = {}
-    for pid in pachete_list:
-        if pid in ultima_accesare:
-            zile_de_la_ultima[pid] = max((today - ultima_accesare[pid]).days, 0)
+    days_since_last_access = {}
+    for deck_id in deck_ids:
+        if deck_id in last_access:
+            days_since_last_access[deck_id] = max((today - last_access[deck_id]).days, 0)
         else:
-            zile_de_la_ultima[pid] = nr_zile
+            days_since_last_access[deck_id] = nr_zile
 
-    return A_raw, X, pachete_list, days, zile_de_la_ultima
+    return A_raw, X, deck_ids, days, days_since_last_access
 
 def select_k_by_energy(singular_values, energy_threshold=SVD_ENERGY_THRESHOLD):
     energies = np.array(singular_values, dtype=float) ** 2
@@ -200,7 +200,7 @@ def fit_svd_pattern_model(X, days, target_day=None):
         "decision_threshold": decision_threshold,
     }
 
-def classify_packages(fit, pachete_list, zile_de_la_ultima, A_raw):
+def classify_packages(fit, deck_ids, days_since_last_access, A_raw):
     if fit is None:
         return []
 
@@ -211,7 +211,7 @@ def classify_packages(fit, pachete_list, zile_de_la_ultima, A_raw):
     sigma_1 = max(float(fit["s"][0]), 1e-12)
 
     rows = []
-    for j, pid in enumerate(pachete_list):
+    for j, deck_id in enumerate(deck_ids):
         c = contribs[:, j]
         positives = np.maximum(c, 0.0)
         negatives = np.maximum(-c, 0.0)
@@ -233,10 +233,10 @@ def classify_packages(fit, pachete_list, zile_de_la_ultima, A_raw):
 
 def get_recommendations_list(user):
     data = get_db_interactions(user)
-    A_raw, X, pachete_list, days, zile_de_la_ultima = build_daily_difficulty_matrix(data, user)
+    A_raw, X, deck_ids, days, days_since_last_access = build_daily_difficulty_matrix(data, user)
     fit = fit_svd_pattern_model(X, days)
     if fit is None:
         return []
     
-    recommended_ids = classify_packages(fit, pachete_list, zile_de_la_ultima, A_raw)
+    recommended_ids = classify_packages(fit, deck_ids, days_since_last_access, A_raw)
     return recommended_ids
